@@ -15,11 +15,11 @@ set :deploy_via, :remote_cache
 set :ssh_options, {:forward_agent => true}
 set :use_sudo, false
 
-if exists?(:cakephp_site) and cakephp_site
-  set :cake_shared_dirs, %w{tmp Vendor Plugin} unless exists?(:cake_shared_dirs)
-  set :shared_children, shared_children + cake_shared_dirs
-end
-set :shared_children, shared_children + upload_dirs if exists?(:upload_dirs)
+set(:cake_config_files, %w{core.php database.php bootstrap.php}) unless exists?(:cake_config_files)
+set(:cake_shared_dirs, %w{tmp Vendor Plugin}) unless exists?(:cake_shared_dirs)
+set :shared_children, shared_children + cake_shared_dirs
+
+set(:shared_children, shared_children + upload_dirs) if exists?(:upload_dirs)
 set(:composer, "update") unless exists?(:composer)
 
 # ==============================================================================
@@ -42,13 +42,11 @@ end
 namespace :cakephp do
   desc "Links shared dirs, links config files, clears cache."
   task :default do
-    if exists?(:cakephp_site) and cakephp_site
-      link.shared
-      link.config
-      cache
-      if exists?(:upload_dirs)
-        link.uploads
-      end
+    link.shared
+    link.config
+    cache
+    if exists?(:upload_dirs)
+      link.uploads
     end
   end
 
@@ -77,7 +75,7 @@ namespace :cakephp do
 
     desc "[internal] Removes and then links config files."
     task :config do
-      if exists?(:cake_config_files) and cake_config_files.is_a?(Array)
+      if cake_config_files.is_a?(Array)
         run "rm -f #{current_release}/Config/{#{cake_config_files * ","}}"
         cake_config_files.each do |cake_config_file|
           run "ln -s #{shared_path}/Config/#{cake_config_file} #{current_release}/Config/#{cake_config_file}"
@@ -97,15 +95,13 @@ namespace :cakephp do
   namespace :setup do
     desc "Creates shared Config dir, uploads local config files."
     task :config do
-      if exists?(:cakephp_site) and cakephp_site
-        run "mkdir -p #{shared_path}/Config"
-        if exists?(:cake_config_files) and cake_config_files.is_a?(Array)
-          cake_config_files.each do |cake_config_file|
-            upload("Config/#{cake_config_file}", "#{shared_path}/Config/#{cake_config_file}", :via => :scp)
-          end
+      run "mkdir -p #{shared_path}/Config"
+      if cake_config_files.is_a?(Array)
+        cake_config_files.each do |cake_config_file|
+          upload("Config/#{cake_config_file}", "#{shared_path}/Config/#{cake_config_file}", :via => :scp)
         end
-        puts "\nRemember to edit the config files before deployment!\n\n"
       end
+      puts "\nRemember to edit the config files before deployment!\n\n"
     end
   end
 end

@@ -10,8 +10,7 @@ role :web, "myownserver.com"
 # ==============================================================================
 # Optional settings
 # ==============================================================================
-set :cakephp_site, true
-set :cake_config_files, %w{core.php database.php bootstrap.php}
+# set :cake_config_files, %w{core.php database.php bootstrap.php} # these are the defaults
 # set :cake_shared_dirs, %w{tmp Vendor Plugin} # these are the defaults
 set :upload_dirs, %w{img/contents img/options files/downloads}
 set :compile_css, true
