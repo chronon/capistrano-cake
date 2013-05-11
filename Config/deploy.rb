@@ -89,7 +89,11 @@ namespace :cakephp do
 
     desc "Link the upload directories to their shared targets."
     task :uploads do
-      run "rm -rf #{current_release}/webroot/{#{upload_dirs * ","}}"
+      if upload_dirs.length == 1
+        run "rm -rf #{current_release}/webroot/#{upload_dirs * ","}"
+      else
+        run "rm -rf #{current_release}/webroot/{#{upload_dirs * ","}}"
+      end
       upload_dirs.each do |upload_dir|
         run "ln -s #{shared_path}/#{upload_dir} #{current_release}/webroot/#{upload_dir}"
       end
@@ -106,6 +110,24 @@ namespace :cakephp do
         end
       end
       puts "\nRemember to edit the config files before deployment!\n\n"
+    end
+  end
+
+  desc "[internal] Creates the upload dir subdirectories if they exist."
+  task :upload_subdirs do 
+    if exists?(:upload_children) and upload_children.is_a?(Array)
+      upload_children.each do |upload_child|
+        run "mkdir #{shared_path}/#{upload_child}"
+      end
+    end
+  end
+
+  desc "[internal] Sets the permissions on the upload dirs if they exist."
+  task :upload_permissions do 
+    if exists?(:upload_dirs) and upload_dirs.is_a?(Array)
+      upload_dirs.each do |upload_dir|
+        run "chmod -fR 2770 #{shared_path}/#{upload_dir}"
+      end
     end
   end
 end
@@ -173,29 +195,12 @@ namespace :misc do
     end
   end
 
-  desc "[internal] Creates the upload dir subdirectories if they exist."
-  task :upload_subdirs do 
-    if exists?(:upload_children) and upload_children.is_a?(Array)
-      upload_children.each do |upload_child|
-        run "mkdir #{shared_path}/#{upload_child}"
-      end
-    end
-  end
-
-  desc "[internal] Sets the permissions on the upload dirs if they exist."
-  task :upload_permissions do 
-    if exists?(:upload_dirs) and upload_dirs.is_a?(Array)
-      upload_dirs.each do |upload_dir|
-        run "chmod -fR 2770 #{shared_path}/#{upload_dir}"
-      end
-    end
-  end
 end
 
 # ==============================================================================
 # After hooks
 # ==============================================================================
-after "deploy:setup", "cakephp:setup:config", "misc:upload_subdirs", "misc:upload_permissions"
+after "deploy:setup", "cakephp:setup:config", "cakephp:upload_subdirs", "cakephp:upload_permissions"
 after "deploy:finalize_update", "cakephp"
 after "deploy:create_symlink" do
   # misc.runcomposer
