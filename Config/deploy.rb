@@ -15,8 +15,8 @@ set :deploy_via, :remote_cache
 set :ssh_options, {:forward_agent => true}
 set :use_sudo, false
 
-set(:cake_config_files, %w{core.php database.php bootstrap.php}) unless exists?(:cake_config_files)
-set(:cake_shared_dirs, %w{tmp Vendor Plugin}) unless exists?(:cake_shared_dirs)
+set(:cake_config_files, %w{ core.php database.php bootstrap.php }) unless exists?(:cake_config_files)
+set(:cake_shared_dirs, %w{ tmp Vendor Plugin }) unless exists?(:cake_shared_dirs)
 set :shared_children, shared_children + cake_shared_dirs
 
 set(:shared_children, shared_children + upload_dirs) if exists?(:upload_dirs)
@@ -83,7 +83,7 @@ namespace :cakephp do
       end
     end
 
-    desc "[internal] Link the upload directories to their shared targets."
+    desc "Link the upload directories to their shared targets."
     task :uploads do
       run "rm -rf #{current_release}/webroot/{#{upload_dirs * ","}}"
       upload_dirs.each do |upload_dir|
@@ -169,6 +169,15 @@ namespace :misc do
     end
   end
 
+  desc "[internal] Creates the upload dir subdirectories if they exist."
+  task :upload_subdirs do 
+    if exists?(:upload_children) and upload_children.is_a?(Array)
+      upload_children.each do |upload_child|
+        run "mkdir #{shared_path}/#{upload_child}"
+      end
+    end
+  end
+
   desc "[internal] Sets the permissions on the upload dirs if they exist."
   task :upload_permissions do 
     if exists?(:upload_dirs) and upload_dirs.is_a?(Array)
@@ -182,10 +191,10 @@ end
 # ==============================================================================
 # After hooks
 # ==============================================================================
-after "deploy:setup", "cakephp:setup:config", "misc:upload_permissions"
+after "deploy:setup", "cakephp:setup:config", "misc:upload_subdirs", "misc:upload_permissions"
 after "deploy:finalize_update", "cakephp"
 after "deploy:create_symlink" do
-  misc.runcomposer
+  # misc.runcomposer
   deploy.link_public
   assets.default
   misc.file_cleanup
