@@ -1,9 +1,13 @@
 # ==============================================================================
-# 1. cap deploy:setup
-# 2. cap deploy -S composer=install
+# * cap deploy:setup
+# * cap deploy
+# * cap misc:runcomposer -S composer=install (to run composer install)
+# * cap misc:runcomposer (to run composer update)
+#
 # 
-# 1. cap staging deploy:setup
-# 2. etc.
+# * cap staging deploy:setup
+# * cap staging deploy
+# * etc.
 # ==============================================================================
 
 # ==============================================================================

@@ -138,6 +138,7 @@ A few other variables can be set in `app.rb`, all are optional:
 set :cake_config_files, %w{core.php database.php bootstrap.php} # these are the defaults if not set
 set :cake_shared_dirs, %w{tmp Vendor Plugin} # these are the defaults if not set
 set :upload_dirs, %w{img/contents img/options files/downloads}
+set :upload_children, %w{ img/contents/thumbs } # subdirectories created under upload_dirs
 set :compile_css, true
 set :compile_js, true
 set :files_to_remove, %w{webroot/css/cake*.css webroot/img/cake.* webroot/img/test-*.png webroot/test.php}
