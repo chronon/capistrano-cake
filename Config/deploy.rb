@@ -52,6 +52,9 @@ namespace :cakephp do
     if exists?(:upload_dirs)
       link.uploads
     end
+    if exists?(:cakephp_version)
+      symlink_core 
+    end
   end
 
   desc "Removes and then creates tmp dirs (except log if exists)."
@@ -66,6 +69,11 @@ namespace :cakephp do
         chmod -fR 2770 #{shared_path}/tmp/logs; 
       fi
     CMD
+  end
+
+  desc "Symlink the specified CakePHP core."
+  task :symlink_core do 
+    run "ln -s /home/chronon/phpinc/#{cakephp_version}/lib #{releases_path}/lib"
   end
   
   namespace :link do
