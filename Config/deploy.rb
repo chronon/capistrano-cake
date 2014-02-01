@@ -52,9 +52,6 @@ namespace :cakephp do
     if exists?(:upload_dirs)
       link.uploads
     end
-    if exists?(:cakephp_version)
-      symlink_core 
-    end
   end
 
   desc "Removes and then creates tmp dirs (except log if exists)."
@@ -73,7 +70,7 @@ namespace :cakephp do
 
   desc "Symlink the specified CakePHP core."
   task :symlink_core do 
-    run "ln -s /home/chronon/phpinc/#{cakephp_version}/lib #{releases_path}/lib"
+    run "ln -sf /home/chronon/phpinc/#{cakephp_version}/lib #{releases_path}/lib"
   end
   
   namespace :link do
@@ -216,4 +213,7 @@ after "deploy:create_symlink" do
   assets.default
   misc.file_cleanup
   deploy.cleanup
+  if exists?(:cakephp_version)
+    cakephp.symlink_core 
+  end
 end
