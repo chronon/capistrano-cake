@@ -19,6 +19,7 @@ set :deploy_via, :remote_cache
 set :ssh_options, {:forward_agent => true}
 set :use_sudo, false
 
+set(:cake_config_profile, nil) unless exists?(:cake_config_profile)
 set(:cake_config_files, %w{ core.php database.php bootstrap.php }) unless exists?(:cake_config_files)
 set(:cake_shared_dirs, %w{ tmp Vendor Plugin }) unless exists?(:cake_shared_dirs)
 set :shared_children, shared_children + cake_shared_dirs
@@ -84,10 +85,16 @@ namespace :cakephp do
 
     desc "[internal] Removes and then links config files."
     task :config do
-      if cake_config_files.is_a?(Array)
+      if cake_config_profile == nil and cake_config_files.is_a?(Array)
         run "rm -f #{current_release}/Config/{#{cake_config_files * ","}}"
         cake_config_files.each do |cake_config_file|
           run "ln -s #{shared_path}/Config/#{cake_config_file} #{current_release}/Config/#{cake_config_file}"
+        end
+      end
+      if cake_config_profile.is_a? String
+        cake_config_files.each do |cake_config_file|
+          profile_file = cake_config_file.gsub("\.php", "\.#{cake_config_profile}\.php")
+          run "mv -f #{current_release}/Config/#{profile_file} #{current_release}/Config/#{cake_config_file}"
         end
       end
     end
@@ -108,13 +115,15 @@ namespace :cakephp do
   namespace :setup do
     desc "Creates shared Config dir, uploads local config files."
     task :config do
-      run "mkdir -p #{shared_path}/Config"
-      if cake_config_files.is_a?(Array)
-        cake_config_files.each do |cake_config_file|
-          upload("Config/#{cake_config_file}", "#{shared_path}/Config/#{cake_config_file}", :via => :scp)
+      if cake_config_profile == nil
+        run "mkdir -p #{shared_path}/Config"
+        if cake_config_files.is_a?(Array)
+          cake_config_files.each do |cake_config_file|
+            upload("Config/#{cake_config_file}", "#{shared_path}/Config/#{cake_config_file}", :via => :scp)
+          end
         end
+        puts "\nRemember to edit the config files before deployment!\n\n"
       end
-      puts "\nRemember to edit the config files before deployment!\n\n"
     end
   end
 
@@ -185,7 +194,7 @@ namespace :misc do
   desc "Runs 'composer #command' only if composer.json exists."
   task :runcomposer do
     run <<-CMD
-      if [[ -f #{current_release}/composer.json ]]; then 
+      if [[ -f #{current_path}/composer.json ]]; then 
         cd #{current_path} && /usr/local/bin/composer #{composer}; 
       fi
     CMD
