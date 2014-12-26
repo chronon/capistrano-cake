@@ -168,9 +168,12 @@ namespace :assets do
       run_locally("grunt compass")
     end
 
-    desc "Uploads contents of css directory."
+    desc "Uploads contents of css and fonts directory."
     task :upload_assets do
       upload("webroot/css", "#{current_path}/webroot", :via => :scp, :recursive => :true)
+      if Dir.exists?('webroot/fonts')
+        upload("webroot/fonts", "#{current_path}/webroot", :via => :scp, :recursive => :true)
+      end
     end
   end
 
