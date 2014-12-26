@@ -4,7 +4,7 @@
 # * cap misc:runcomposer -S composer=install (to run composer install)
 # * cap misc:runcomposer (to run composer update)
 #
-# 
+#
 # * cap staging deploy:setup
 # * cap staging deploy
 # * etc.
@@ -14,7 +14,7 @@
 # Global config
 # ==============================================================================
 set :keep_releases, 1
-set :scm, :git 
+set :scm, :git
 set :deploy_via, :remote_cache
 set :ssh_options, {:forward_agent => true}
 set :use_sudo, false
@@ -64,16 +64,16 @@ namespace :cakephp do
     # set the permission on 'logs' only if it's not empty
     run <<-CMD
       if find #{shared_path}/tmp/logs -maxdepth 0 -empty | read; then
-        chmod -fR 2770 #{shared_path}/tmp/logs; 
+        chmod -fR 2770 #{shared_path}/tmp/logs;
       fi
     CMD
   end
 
   desc "Symlink the specified CakePHP core."
-  task :symlink_core do 
+  task :symlink_core do
     run "ln -sf /home/chronon/phpinc/#{cakephp_version}/lib #{releases_path}/lib"
   end
-  
+
   namespace :link do
     desc "[internal] Removes and links the shared directories to current release."
     task :shared do
@@ -128,7 +128,7 @@ namespace :cakephp do
   end
 
   desc "[internal] Creates the upload dir subdirectories if they exist."
-  task :upload_subdirs do 
+  task :upload_subdirs do
     if exists?(:upload_children) and upload_children.is_a?(Array)
       upload_children.each do |upload_child|
         run "mkdir #{shared_path}/#{upload_child}"
@@ -137,7 +137,7 @@ namespace :cakephp do
   end
 
   desc "[internal] Sets the permissions on the upload dirs if they exist."
-  task :upload_permissions do 
+  task :upload_permissions do
     if exists?(:upload_dirs) and upload_dirs.is_a?(Array)
       upload_dirs.each do |upload_dir|
         run "chmod -fR 2770 #{shared_path}/#{upload_dir}"
@@ -161,11 +161,11 @@ namespace :assets do
       js.upload_assets
     end
   end
-  
+
   namespace :css do
-    desc "Compiles scss by running compass compile."
+    desc "Compiles scss by running `grunt compass`"
     task :compile do
-      run_locally("compass compile compass")
+      run_locally("grunt compass")
     end
 
     desc "Uploads contents of css directory."
@@ -175,9 +175,9 @@ namespace :assets do
   end
 
   namespace :js do
-    desc "Compiles js by running jammit."
+    desc "Compiles js by running `grunt js`"
     task :compile do
-      run_locally("jammit -c compass/assets.yml -o webroot/js/")
+      run_locally("grunt js")
     end
 
     desc "Uploads contents of css and js directories."
@@ -194,8 +194,8 @@ namespace :misc do
   desc "Runs 'composer #command' only if composer.json exists."
   task :runcomposer do
     run <<-CMD
-      if [[ -f #{current_path}/composer.json ]]; then 
-        cd #{current_path} && /usr/local/bin/composer #{composer}; 
+      if [[ -f #{current_path}/composer.json ]]; then
+        cd #{current_path} && /usr/local/bin/composer #{composer};
       fi
     CMD
   end
@@ -223,6 +223,6 @@ after "deploy:create_symlink" do
   misc.file_cleanup
   deploy.cleanup
   if exists?(:cakephp_version)
-    cakephp.symlink_core 
+    cakephp.symlink_core
   end
 end
