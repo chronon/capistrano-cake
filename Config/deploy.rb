@@ -26,6 +26,7 @@ set :shared_children, shared_children + cake_shared_dirs
 
 set(:shared_children, shared_children + upload_dirs) if exists?(:upload_dirs)
 set(:composer, "update") unless exists?(:composer)
+set(:build_tool, "grunt") unless exists?(:build_tool)
 
 # ==============================================================================
 # Deploy:
@@ -165,7 +166,12 @@ namespace :assets do
   namespace :css do
     desc "Compiles scss by running `grunt compass`"
     task :compile do
-      run_locally("grunt compass")
+      if :build_tool == 'grunt'
+        run_locally("grunt compass")
+      end
+      if :build_tool == 'compass'
+        run_locally("compass compile compass")
+      end
     end
 
     desc "Uploads contents of css and fonts directory."
@@ -180,7 +186,12 @@ namespace :assets do
   namespace :js do
     desc "Compiles js by running `grunt js`"
     task :compile do
-      run_locally("grunt js")
+      if :build_tool == 'grunt'
+        run_locally("grunt js")
+      end
+      if :build_tool == 'compass'
+        run_locally("jammit -c compass/assets.yml -o webroot/js/")
+      end
     end
 
     desc "Uploads contents of css and js directories."
