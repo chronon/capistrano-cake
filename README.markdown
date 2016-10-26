@@ -1,6 +1,8 @@
 Deploying with Capistrano: CakePHP, Composer, and Compass
 =========================================================
 
+### NOTE: This project is deprecated and will most likely not be updated. It remains a working deployment solution for CakePHP 2.x apps, but will not be updated for CakePHP 3.x. 
+
 [Capistrano](https://github.com/capistrano/capistrano), originally developed to deploy Rails
 websites, is an extremely useful tool for deploying anything. I'm using it to deploy CakePHP based
 sites which use [Composer](http://getcomposer.org/) to manage dependencies,
